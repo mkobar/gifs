@@ -1,6 +1,6 @@
 var app = new Clarifai.App({apiKey: 'c58641c2cf8447c2a584daca501d9d88'});
 
-var emotion = 'sadness';
+var emotion = 'none';
 var sadAudio = new Audio('sad.mp3');
 var happyAudio = new Audio('happy.mp3');
 var scaryAudio = new Audio('scary.mp3');
@@ -14,12 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
         image = document.querySelector('#snap'),
         start_camera = document.querySelector('#start-camera'),
         controls = document.querySelector('.controls'),
-        take_photo_btn = document.querySelector('#take-photo'),
-        delete_photo_btn = document.querySelector('#delete-photo'),
-        download_photo_btn = document.querySelector('#download-photo'),
-        error_message = document.querySelector('#error-message');
-
-
+        take_photo_btn = document.querySelector('#take-photo');
+    
     // The getUserMedia interface is used for handling camera input.
     // Some browsers need a prefix so here we're covering all the options
     navigator.getMedia = ( navigator.getUserMedia ||
@@ -59,8 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
-
-
     // Mobile browsers cannot play video without user input,
     // so here we're using a button to start it manually.
     start_camera.addEventListener("click", function(e){
@@ -78,12 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
 //        e.preventDefault();
 
         var snap = takeSnapshot();
-
-        delete_photo_btn.classList.remove("disabled");
-        download_photo_btn.classList.remove("disabled");
-
-        // Set the href attribute of the download button to the snap url.
-        download_photo_btn.href = snap;
         app.models.predict("emotions", snap.substring(22)).then(
   function(response) {
       console.log(response.outputs[0].data.concepts[0].name);
@@ -171,26 +159,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 );
     }, 5000));
-
-
-    delete_photo_btn.addEventListener("click", function(e){
-
-        e.preventDefault();
-
-        // Hide image.
-        image.setAttribute('src', "");
-        image.classList.remove("visible");
-
-        // Disable delete and save buttons
-        delete_photo_btn.classList.add("disabled");
-        download_photo_btn.classList.add("disabled");
-
-        // Resume playback of stream.
-        video.play();
-
-    });
-
-
   
     function showVideo(){
         // Display the video stream and the controls.
@@ -224,20 +192,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return hidden_canvas.toDataURL();
         }
     }
-
-
-    function displayErrorMessage(error_msg, error){
-        error = error || "";
-        if(error){
-            console.error(error);
-        }
-
-        error_message.innerText = error_msg;
-
-        hideUI();
-        error_message.classList.add("visible");
-    }
-
    
     function hideUI(){
         // Helper function for clearing the app UI.
@@ -246,39 +200,6 @@ document.addEventListener('DOMContentLoaded', function () {
         start_camera.classList.remove("visible");
         video.classList.remove("visible");
         snap.classList.remove("visible");
-        error_message.classList.remove("visible");
-    }
-    
-    function takePhoto(){
-//        e.preventDefault();
-
-        var snap = takeSnapshot();
-
-        // Show image. 
-//        image.setAttribute('src', snap);
-//        image.classList.add("visible");
-
-        // Enable delete and save buttons
-        delete_photo_btn.classList.remove("disabled");
-        download_photo_btn.classList.remove("disabled");
-
-        // Set the href attribute of the download button to the snap url.
-        download_photo_btn.href = snap;
-
-        // Pause video playback of stream.
-//        video.pause();
-        
-        app.models.predict(Clarifai.GENERAL_MODEL, snap.substring(22)).then(
-  function(response) {
-      console.log(response.outputs[0].data.concepts[0].name);
-      document.getElementById("test").innerHTML = response.outputs[0].data.concepts[0].name + ", " + 
-          response.outputs[0].data.concepts[1].name + ", " + 
-          response.outputs[0].data.concepts[2].name;
-  },
-  function(err) {
-    // there was an error
-  }
-);
     }
 
 });
